@@ -116,15 +116,15 @@ func ResolveControllerFromPod(ctx context.Context, podResource kubeAPICoreV1.Pod
 
 func isFinalKind(kind string) bool {
 	switch kind {
-		case
-			"Deployment",
-			"CronJob",
-			"StatefulSet",
-			"DaemonSet":
-			return true
-		}
-	return false
+	case
+		"Deployment",
+		"CronJob",
+		"StatefulSet",
+		"DaemonSet":
+		return true
 	}
+	return false
+}
 
 func resolveControllerFromPod(ctx context.Context, podResource kubeAPICoreV1.Pod, dynamicClient *dynamic.Interface, restMapper *meta.RESTMapper, objectCache map[string]unstructured.Unstructured) (GenericResource, error) {
 	podWorkload, err := NewGenericResourceFromPod(podResource, nil)
@@ -155,8 +155,8 @@ func resolveControllerFromPod(ctx context.Context, podResource kubeAPICoreV1.Pod
 			}
 			abstractObject, ok = objectCache[key]
 			if !ok {
-				logrus.Errorf("Cache missed %s again", key)
-				break
+				logrus.Warnf("Cache missed %s again", key)
+				//break
 			}
 		}
 
@@ -194,9 +194,12 @@ func cacheAllObjectsOfKind(ctx context.Context, apiVersion, kind string, dynamic
 	}
 
 	objects, err := (*dynamicClient).Resource(mapping.Resource).Namespace("").List(ctx, kubeAPIMetaV1.ListOptions{})
+	//if err != nil {
+	//	logrus.Warnf("Error retrieving parent object API %s and Kind %s because of error: %v", mapping.Resource.Version, mapping.Resource.Resource, err)
+	//	return err
+	//}
 	if err != nil {
-		logrus.Warnf("Error retrieving parent object API %s and Kind %s because of error: %v", mapping.Resource.Version, mapping.Resource.Resource, err)
-		return err
+		return nil
 	}
 	for idx, object := range objects.Items {
 		key := fmt.Sprintf("%s/%s/%s", object.GetKind(), object.GetNamespace(), object.GetName())

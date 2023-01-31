@@ -137,11 +137,18 @@ func CreateResourceProviderFromResource(ctx context.Context, workload string) (*
 		return nil, err
 	}
 	serverVersion, err := kube.Discovery().ServerVersion()
+	//if err != nil {
+	//	logrus.Errorf("Error fetching Cluster API version: %v", err)
+	//	return nil, err
+	//}
+	var serverVersionStr string
 	if err != nil {
-		logrus.Errorf("Error fetching Cluster API version: %v", err)
-		return nil, err
+		serverVersionStr = "1.24"
+	} else {
+		serverVersionStr = fmt.Sprintf("%s.%s", serverVersion.Major, serverVersion.Minor)
 	}
-	resources := newResourceProvider(serverVersion.Major+"."+serverVersion.Minor, "Resource", workload)
+
+	resources := newResourceProvider(serverVersionStr, "Resource", workload)
 
 	parts := strings.Split(workload, "/")
 	if len(parts) != 4 {
@@ -235,11 +242,18 @@ func CreateResourceProviderFromCluster(ctx context.Context, c conf.Configuration
 func CreateResourceProviderFromAPI(ctx context.Context, kube kubernetes.Interface, clusterName string, dynamic *dynamic.Interface, c conf.Configuration) (*ResourceProvider, error) {
 	listOpts := metav1.ListOptions{}
 	serverVersion, err := kube.Discovery().ServerVersion()
+	//if err != nil {
+	//	logrus.Errorf("Error fetching Cluster API version: %v", err)
+	//	return nil, err
+	//}
+	var serverVersionStr string
 	if err != nil {
-		logrus.Errorf("Error fetching Cluster API version: %v", err)
-		return nil, err
+		serverVersionStr = "1.24"
+	} else {
+		serverVersionStr = fmt.Sprintf("%s.%s", serverVersion.Major, serverVersion.Minor)
 	}
-	provider := newResourceProvider(serverVersion.Major+"."+serverVersion.Minor, "Cluster", clusterName)
+
+	provider := newResourceProvider(serverVersionStr, "Cluster", clusterName)
 
 	nodes, err := kube.CoreV1().Nodes().List(ctx, listOpts)
 	if err != nil {
@@ -296,9 +310,12 @@ func CreateResourceProviderFromAPI(ctx context.Context, kube kubernetes.Interfac
 		}
 
 		objects, err := (*dynamic).Resource(mapping.Resource).Namespace("").List(ctx, metav1.ListOptions{})
+		//if err != nil {
+		//	logrus.Warnf("DELETEME@kjoshi 01: Error retrieving parent object API %s and Kind %s because of error: %v", mapping.Resource.Version, mapping.Resource.Resource, err)
+		//	return nil, err
+		//}
 		if err != nil {
-			logrus.Warnf("Error retrieving parent object API %s and Kind %s because of error: %v", mapping.Resource.Version, mapping.Resource.Resource, err)
-			return nil, err
+			continue
 		}
 		for _, obj := range objects.Items {
 			res, err := NewGenericResourceFromUnstructured(obj)
