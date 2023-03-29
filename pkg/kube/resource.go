@@ -194,10 +194,10 @@ func cacheAllObjectsOfKind(ctx context.Context, apiVersion, kind string, dynamic
 	}
 
 	objects, err := (*dynamicClient).Resource(mapping.Resource).Namespace("").List(ctx, kubeAPIMetaV1.ListOptions{})
-	//if err != nil {
-	//	logrus.Warnf("Error retrieving parent object API %s and Kind %s because of error: %v", mapping.Resource.Version, mapping.Resource.Resource, err)
-	//	return err
-	//}
+	if err != nil {
+		logrus.Warnf("Error retrieving parent object API %s and Kind %s because of error: %v", mapping.Resource.Version, mapping.Resource.Resource, err)
+		return err
+	}
 	if err != nil {
 		return nil
 	}

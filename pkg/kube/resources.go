@@ -137,10 +137,11 @@ func CreateResourceProviderFromResource(ctx context.Context, workload string) (*
 		return nil, err
 	}
 	serverVersion, err := kube.Discovery().ServerVersion()
-	//if err != nil {
-	//	logrus.Errorf("Error fetching Cluster API version: %v", err)
-	//	return nil, err
-	//}
+	// DELETEME@kjoshi, comment this out!
+	if err != nil {
+		logrus.Errorf("Error fetching Cluster API version: %v", err)
+		return nil, err
+	}
 	var serverVersionStr string
 	if err != nil {
 		serverVersionStr = "1.24"
@@ -242,10 +243,12 @@ func CreateResourceProviderFromCluster(ctx context.Context, c conf.Configuration
 func CreateResourceProviderFromAPI(ctx context.Context, kube kubernetes.Interface, clusterName string, dynamic *dynamic.Interface, c conf.Configuration) (*ResourceProvider, error) {
 	listOpts := metav1.ListOptions{}
 	serverVersion, err := kube.Discovery().ServerVersion()
-	//if err != nil {
-	//	logrus.Errorf("Error fetching Cluster API version: %v", err)
-	//	return nil, err
-	//}
+
+	// DELETEME@kjoshi, comment this out.
+	if err != nil {
+		logrus.Errorf("Error fetching Cluster API version: %v", err)
+		return nil, err
+	}
 	var serverVersionStr string
 	if err != nil {
 		serverVersionStr = "1.24"
@@ -310,10 +313,10 @@ func CreateResourceProviderFromAPI(ctx context.Context, kube kubernetes.Interfac
 		}
 
 		objects, err := (*dynamic).Resource(mapping.Resource).Namespace("").List(ctx, metav1.ListOptions{})
-		//if err != nil {
-		//	logrus.Warnf("DELETEME@kjoshi 01: Error retrieving parent object API %s and Kind %s because of error: %v", mapping.Resource.Version, mapping.Resource.Resource, err)
-		//	return nil, err
-		//}
+		if err != nil {
+			logrus.Warnf("Error retrieving parent object API %s and Kind %s because of error: %v", mapping.Resource.Version, mapping.Resource.Resource, err)
+			return nil, err
+		}
 		if err != nil {
 			continue
 		}
